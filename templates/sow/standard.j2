@@ -1,0 +1,34 @@
+# {{ project_name }}
+
+## Project Overview
+{{ project_description }}
+
+## Scope of Work
+{% for item in scope %}
+- {{ item }}
+{% endfor %}
+
+## Deliverables
+{% for item in deliverables %}
+- {{ item }}
+{% endfor %}
+
+## Project Timeline
+{% for phase in timeline %}
+- {{ phase.name }}: {{ phase.duration }}
+{% endfor %}
+
+## Cost and Payment Schedule
+Total Cost: ${{ cost.total }}
+
+Payment Schedule:
+{% for milestone, amount in cost.schedule.items() %}
+- {{ milestone }}: ${{ amount }}
+{% endfor %}
+
+{% if assumptions %}
+## Assumptions and Constraints
+{% for item in assumptions %}
+- {{ item }}
+{% endfor %}
+{% endif %}

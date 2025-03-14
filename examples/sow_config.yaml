@@ -1,0 +1,50 @@
+project_name: "AWS Infrastructure Modernization"
+client_name: "Example Corp"
+project_description: |
+  This project aims to modernize Example Corp's infrastructure by migrating their 
+  existing on-premises applications to AWS cloud. The migration will include 
+  re-architecting key applications to take advantage of cloud-native services and 
+  implementing best practices for security, scalability, and cost optimization.
+
+scope:
+  - "Assessment of current infrastructure and applications"
+  - "Development of cloud migration strategy and roadmap"
+  - "Design of target AWS architecture"
+  - "Migration of applications to AWS"
+  - "Implementation of monitoring and alerting"
+  - "Knowledge transfer and documentation"
+
+deliverables:
+  - "Cloud Migration Strategy Document"
+  - "AWS Architecture Design Documents"
+  - "Migration Runbooks"
+  - "Infrastructure as Code (IaC) Templates"
+  - "Monitoring Dashboard and Alerts Configuration"
+  - "Knowledge Transfer Sessions and Documentation"
+
+timeline:
+  - phase: "Assessment and Planning"
+    duration: "4 weeks"
+  - phase: "Architecture Design"
+    duration: "6 weeks"
+  - phase: "Migration Execution"
+    duration: "12 weeks"
+  - phase: "Testing and Optimization"
+    duration: "4 weeks"
+  - phase: "Handover and Documentation"
+    duration: "2 weeks"
+
+cost:
+  total: 250000.00
+  schedule:
+    "Project Initiation (20%)": 50000.00
+    "Architecture Design Complete (30%)": 75000.00
+    "Migration Complete (30%)": 75000.00
+    "Project Completion (20%)": 50000.00
+
+assumptions:
+  - "Client will provide timely access to necessary systems and resources"
+  - "Client will assign a dedicated project manager as point of contact"
+  - "Existing applications are well-documented"
+  - "Network connectivity between on-premises and AWS is established"
+  - "All required third-party software licenses are available" 

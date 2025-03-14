@@ -1,0 +1,21 @@
+description: Standard SOW template
+name: standard
+sections:
+- name: project_overview
+  required: true
+  title: Project Overview
+- name: scope
+  required: true
+  title: Scope of Work
+- name: deliverables
+  required: true
+  title: Deliverables
+- name: timeline
+  required: true
+  title: Project Timeline
+- name: cost
+  required: true
+  title: Cost and Payment Schedule
+- name: assumptions
+  required: false
+  title: Assumptions and Constraints

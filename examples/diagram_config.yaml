@@ -1,0 +1,87 @@
+name: "Three-Tier Web Application"
+direction: "TB"  # Top to Bottom
+
+clusters:
+  - name: "Public Subnet"
+    nodes:
+      - name: "load_balancer"
+        service: "elb"
+        
+  - name: "Web Tier"
+    nodes:
+      - name: "web_server_1"
+        service: "ec2"
+      - name: "web_server_2"
+        service: "ec2"
+        
+  - name: "App Tier"
+    nodes:
+      - name: "app_server_1"
+        service: "ec2"
+      - name: "app_server_2"
+        service: "ec2"
+      - name: "queue"
+        service: "sqs"
+        
+  - name: "Database Tier"
+    nodes:
+      - name: "database"
+        service: "rds"
+      
+  - name: "Storage"
+    nodes:
+      - name: "assets"
+        service: "s3"
+      - name: "backups"
+        service: "s3"
+        
+connections:
+  - from: "load_balancer"
+    to: "web_server_1"
+    label: "HTTP/S"
+    
+  - from: "load_balancer"
+    to: "web_server_2"
+    label: "HTTP/S"
+    
+  - from: "web_server_1"
+    to: "app_server_1"
+    label: "HTTP/S"
+    
+  - from: "web_server_1"
+    to: "app_server_2"
+    label: "HTTP/S"
+    
+  - from: "web_server_2"
+    to: "app_server_1"
+    label: "HTTP/S"
+    
+  - from: "web_server_2"
+    to: "app_server_2"
+    label: "HTTP/S"
+    
+  - from: "app_server_1"
+    to: "database"
+    label: "SQL"
+    
+  - from: "app_server_2"
+    to: "database"
+    label: "SQL"
+    
+  - from: "app_server_1"
+    to: "queue"
+    
+  - from: "app_server_2"
+    to: "queue"
+    
+  - from: "app_server_1"
+    to: "assets"
+    label: "S3 API"
+    
+  - from: "app_server_2"
+    to: "assets"
+    label: "S3 API"
+    
+  - from: "database"
+    to: "backups"
+    label: "Backup" 
