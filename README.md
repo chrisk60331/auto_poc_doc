@@ -7,6 +7,8 @@ A comprehensive tool for creating Statement of Work (SOW), AWS Architecture Diag
 - **Statement of Work Generation**: Create professional SOW documents from customizable templates
 - **AWS Architecture Diagrams**: Generate clear and professional architecture diagrams
 - **AWS Price Estimation**: Calculate cost estimates for AWS resources
+- **AI-Powered Configuration Generation**: Use Amazon Bedrock to generate AWS configurations from meeting notes or transcripts
+- **End-to-End Workflow**: Go from meeting notes to complete deliverables in a single command
 - Dual interface:
   - CLI using Click
   - REST API using FastAPI
@@ -69,6 +71,38 @@ To install Graphviz:
 
 ### Command-Line Interface
 
+#### End-to-End Workflow
+
+The most efficient way to use this tool is with the end-to-end workflow that generates all deliverables from meeting notes in a single command:
+
+```bash
+# Generate everything from meeting notes: SOW, diagram, and price estimate
+aws-planner workflow end-to-end --notes meeting_notes.txt --output-dir my_project --sow-template standard
+
+# Additional options
+aws-planner workflow end-to-end --notes meeting_notes.txt --output-dir my_project --sow-template standard --model anthropic.claude-v2 --region us-west-2 --no-save-configs
+```
+
+This will:
+1. Generate all configurations (resources, diagram, SOW) using AI
+2. Create the SOW document from the generated configuration
+3. Create the architecture diagram from the generated configuration
+4. Calculate AWS price estimates from the generated resources
+5. Save all outputs to the specified directory
+
+#### Generate Configurations from Meeting Notes
+
+```bash
+# Generate resources configuration
+aws-planner generate resources --notes meeting_notes.txt --resources-output resources_config.yaml
+
+# Generate diagram configuration
+aws-planner generate diagram --notes meeting_notes.txt --diagram-output diagram_config.yaml
+
+# Generate both configurations at once
+aws-planner generate all --notes meeting_notes.txt --resources-output resources_config.yaml --diagram-output diagram_config.yaml
+```
+
 #### Generate SOW Document
 
 ```bash
@@ -100,6 +134,12 @@ uvicorn aws_project_planning.api.main:app --reload
 ```
 
 Access the API documentation at http://localhost:8000/docs
+
+The API provides endpoints for:
+- Creating SOW documents
+- Generating AWS architecture diagrams
+- Calculating AWS price estimates
+- Converting meeting notes to AWS configurations using AI
 
 ## Configuration Files
 
@@ -250,4 +290,41 @@ MIT
 
 - [Diagrams](https://diagrams.mingrammer.com/) for the architecture diagram generation
 - [FastAPI](https://fastapi.tiangolo.com/) for the API framework
-- [Click](https://click.palletsprojects.com/) for the CLI framework 
+- [Click](https://click.palletsprojects.com/) for the CLI framework
+
+## AWS Bedrock Integration
+
+This tool integrates with Amazon Bedrock to provide AI-powered generation of AWS configurations from natural language descriptions, meeting notes, or project transcripts. The LLM can:
+
+1. Parse project requirements from unstructured text
+2. Determine appropriate AWS services and instance types
+3. Generate structured YAML configurations for both resources and architecture diagrams
+
+To use the Bedrock integration:
+
+1. Ensure your AWS credentials are configured with Bedrock access
+2. Create a text file with project requirements or meeting notes
+3. Use the `generate` commands to create configurations
+
+Example usage:
+
+```bash
+# Generate both resources and diagram configs
+aws-planner generate all --notes examples/meeting_notes.txt --resources-output generated_resources.yaml --diagram-output generated_diagram.yaml
+
+# Create diagram from the generated config
+aws-planner diagram create --config generated_diagram.yaml --output architecture.png
+
+# Calculate cost estimate from the generated resources
+aws-planner pricing estimate --resources generated_resources.yaml --output estimate.txt
+```
+
+### Supported Bedrock Models
+
+The default model is `anthropic.claude-v2`, but you can specify other Bedrock models:
+
+```bash
+aws-planner generate resources --notes meeting_notes.txt --model amazon.titan-text-express-v1
+```
+
+The API endpoints also accept a `model_id` parameter for specifying the Bedrock model to use. 

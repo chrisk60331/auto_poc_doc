@@ -1,0 +1,168 @@
+clusters:
+- name: Web Tier
+  nodes:
+  - name: web_server_1
+    service: ec2
+  - name: web_server_2
+    service: ec2
+  - name: web_server_3
+    service: ec2
+  - name: web_server_4
+    service: ec2
+- name: App Tier
+  nodes:
+  - name: app_server_1
+    service: ec2
+  - name: app_server_2
+    service: ec2
+  - name: app_server_3
+    service: ec2
+  - name: app_server_4
+    service: ec2
+  - name: app_server_5
+    service: ec2
+  - name: app_server_6
+    service: ec2
+- name: Data Tier
+  nodes:
+  - name: primary_db
+    service: rds
+  - name: read_replica_db
+    service: rds
+- name: Storage
+  nodes:
+  - name: product_images
+    service: s3
+  - name: order_data
+    service: s3
+- name: Caching
+  nodes:
+  - name: shopping_carts
+    service: elasticache
+- name: Queue
+  nodes:
+  - name: order_queue
+    service: sqs
+- name: Load Balancer
+  nodes:
+  - name: elb
+    service: elb
+- name: Security
+  nodes:
+  - name: waf
+    service: waf
+- name: Monitoring
+  nodes:
+  - name: cloudwatch
+    service: cloudwatch
+connections:
+- from: elb
+  label: HTTP/S
+  to: web_server_1
+- from: elb
+  label: HTTP/S
+  to: web_server_2
+- from: elb
+  label: HTTP/S
+  to: web_server_3
+- from: elb
+  label: HTTP/S
+  to: web_server_4
+- from: web_server_1
+  label: HTTP/S
+  to: app_server_1
+- from: web_server_2
+  label: HTTP/S
+  to: app_server_2
+- from: web_server_3
+  label: HTTP/S
+  to: app_server_3
+- from: web_server_4
+  label: HTTP/S
+  to: app_server_4
+- from: app_server_1
+  label: SQL
+  to: primary_db
+- from: app_server_2
+  label: SQL
+  to: primary_db
+- from: app_server_3
+  label: SQL
+  to: primary_db
+- from: app_server_4
+  label: SQL
+  to: primary_db
+- from: primary_db
+  label: Replication
+  to: read_replica_db
+- from: app_server_1
+  label: Send Message
+  to: order_queue
+- from: app_server_2
+  label: Send Message
+  to: order_queue
+- from: app_server_3
+  label: Send Message
+  to: order_queue
+- from: app_server_4
+  label: Send Message
+  to: order_queue
+- from: web_server_1
+  label: Cache
+  to: shopping_carts
+- from: web_server_2
+  label: Cache
+  to: shopping_carts
+- from: web_server_3
+  label: Cache
+  to: shopping_carts
+- from: web_server_4
+  label: Cache
+  to: shopping_carts
+- from: web_server_1
+  label: GET
+  to: product_images
+- from: web_server_2
+  label: GET
+  to: product_images
+- from: web_server_3
+  label: GET
+  to: product_images
+- from: web_server_4
+  label: GET
+  to: product_images
+- from: order_queue
+  label: PUT
+  to: order_data
+- from: web_server_1
+  label: Requests
+  to: waf
+- from: web_server_2
+  label: Requests
+  to: waf
+- from: web_server_3
+  label: Requests
+  to: waf
+- from: web_server_4
+  label: Requests
+  to: waf
+- from: app_server_1
+  label: Metrics
+  to: cloudwatch
+- from: app_server_2
+  label: Metrics
+  to: cloudwatch
+- from: app_server_3
+  label: Metrics
+  to: cloudwatch
+- from: app_server_4
+  label: Metrics
+  to: cloudwatch
+- from: primary_db
+  label: Metrics
+  to: cloudwatch
+- from: elb
+  label: Metrics
+  to: cloudwatch
+direction: TB
+name: E-Commerce Platform

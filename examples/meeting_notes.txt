@@ -1,0 +1,50 @@
+Meeting Notes: E-Commerce Platform Migration to AWS
+Date: 2023-10-15
+
+Attendees:
+- Sarah (Project Manager)
+- David (Solutions Architect)
+- Emma (Developer Lead)
+- Michael (Database Administrator)
+- Jessica (DevOps Engineer)
+
+Project Requirements:
+1. Migrate our current e-commerce platform to AWS
+2. Need to handle peak traffic of 10,000 concurrent users during holiday seasons
+3. Database currently has 500GB of product data and 1TB of historical order data
+4. Need high availability with 99.99% uptime
+5. Must have disaster recovery capability with RPO of 1 hour and RTO of 4 hours
+6. Compliance requirements include PCI DSS for payment processing
+7. Analytics team needs access to sales data for business intelligence
+
+Proposed Architecture Discussion:
+- David suggested using Elastic Load Balancer for distributing traffic
+- Need at least 4 EC2 instances for the web tier (t3.xlarge suggested)
+- The application tier should have 4-6 instances for processing orders
+- RDS with Multi-AZ for the main product database (MySQL)
+- Consider Aurora for better performance
+- S3 for storing product images and static assets
+- SQS for order processing queue to handle traffic spikes
+- CloudWatch for monitoring and alerts
+- WAF for security compliance
+
+Database Considerations:
+- Michael emphasized the need for a read replica for reporting queries
+- Database needs to support at least 1,000 transactions per second at peak
+- We should consider using RDS MySQL db.r5.2xlarge for the primary database
+- Need 1TB of storage initially with room to grow
+- DynamoDB could be used for shopping cart and session management
+
+Deployment Strategy:
+- Jessica recommended a blue-green deployment approach
+- CI/CD pipeline using AWS CodePipeline
+- Infrastructure as Code using CloudFormation or Terraform
+- Need to set up automatic scaling for handling traffic variations
+- Consider multi-region for the future, but start with us-east-1
+
+Next Steps:
+- Emma will create proof of concept for the application tier
+- Michael will plan the database migration strategy
+- Jessica will draft the IaC templates
+- Sarah will coordinate with the security team for compliance requirements
+- Next meeting scheduled for October 22nd to review progress 
