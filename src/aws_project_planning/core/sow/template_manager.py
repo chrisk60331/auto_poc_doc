@@ -124,8 +124,14 @@ Payment Schedule:
         if template_name not in self.templates:
             return False
 
-        template_file = self.template_dir / f"{template_name}.j2"
-        return template_file.exists()
+        # Check for Jinja2 template (.j2)
+        j2_template = self.template_dir / f"{template_name}.j2"
+        
+        # Check for Word template (.docx)
+        docx_template = self.template_dir / f"{template_name}.docx"
+        
+        # The template is valid if either the .j2 or .docx file exists
+        return j2_template.exists() or docx_template.exists()
 
     def create_template(self, name: str, config: Dict) -> None:
         """Create a new template with the given configuration."""

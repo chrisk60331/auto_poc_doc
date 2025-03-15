@@ -1,0 +1,21 @@
+name: NMD
+description: NMD Custom SOW Template
+sections:
+  - name: project_overview
+    title: Project Overview
+    required: true
+  - name: scope
+    title: Scope of Work
+    required: true
+  - name: deliverables
+    title: Deliverables
+    required: true
+  - name: timeline
+    title: Project Timeline
+    required: true
+  - name: cost
+    title: Cost and Payment Schedule
+    required: true
+  - name: assumptions
+    title: Assumptions and Constraints
+    required: false 

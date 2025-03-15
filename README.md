@@ -79,6 +79,9 @@ The most efficient way to use this tool is with the end-to-end workflow that gen
 # Generate everything from meeting notes: SOW, diagram, and price estimate
 aws-planner workflow end-to-end --notes meeting_notes.txt --output-dir my_project --sow-template standard
 
+# Using the NMD Word template
+aws-planner workflow end-to-end --notes meeting_notes.txt --output-dir my_project --sow-template NMD
+
 # Additional options
 aws-planner workflow end-to-end --notes meeting_notes.txt --output-dir my_project --sow-template standard --model anthropic.claude-v2 --region us-west-2 --no-save-configs
 ```
@@ -99,6 +102,9 @@ aws-planner generate resources --notes meeting_notes.txt --resources-output reso
 # Generate diagram configuration
 aws-planner generate diagram --notes meeting_notes.txt --diagram-output diagram_config.yaml
 
+# Generate SOW configuration
+aws-planner generate sow --notes meeting_notes.txt --sow-output sow_config.yaml
+
 # Generate both configurations at once
 aws-planner generate all --notes meeting_notes.txt --resources-output resources_config.yaml --diagram-output diagram_config.yaml
 ```
@@ -106,7 +112,29 @@ aws-planner generate all --notes meeting_notes.txt --resources-output resources_
 #### Generate SOW Document
 
 ```bash
+# Using standard Jinja2 template
 aws-planner sow create --template standard --config sow_config.yaml --output my_sow.docx
+
+# Using NMD Word template
+aws-planner sow create --template NMD --config sow_config.yaml --output my_sow.docx
+```
+
+The SOW generator supports two types of templates:
+- Jinja2 templates (e.g., `standard.j2`) - Text-based templates with placeholders
+- Word document templates (e.g., `NMD.docx`) - Pre-formatted Word documents with placeholders
+
+When using Word document templates:
+- The generator automatically sets the prepared date to today's date
+- The effective date is automatically set to two weeks from the prepared date
+- Placeholders in the document are replaced with values from your configuration
+
+Available templates:
+- `standard` - Basic text-based template
+- `NMD` - Formatted Word document template with professional layout
+
+To list available templates:
+```bash
+aws-planner sow list-templates
 ```
 
 #### Generate AWS Architecture Diagram
@@ -311,6 +339,10 @@ Example usage:
 ```bash
 # Generate both resources and diagram configs
 aws-planner generate all --notes examples/meeting_notes.txt --resources-output generated_resources.yaml --diagram-output generated_diagram.yaml
+
+# Generate SOW configuration and document
+aws-planner generate sow --notes examples/meeting_notes.txt --sow-output generated_sow.yaml
+aws-planner sow create --config generated_sow.yaml --output project_sow.docx --template NMD
 
 # Create diagram from the generated config
 aws-planner diagram create --config generated_diagram.yaml --output architecture.png
