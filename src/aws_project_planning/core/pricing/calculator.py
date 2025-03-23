@@ -246,6 +246,51 @@ class AWSPriceCalculator:
                 },
             )
 
+        elif resource.service == "sqs":
+            # Fixed monthly cost for SQS
+            monthly_cost = 0.40  # $0.40 per 1M requests
+            return PricingResult(
+                resource_type="SQS Standard Queue",
+                unit_price=monthly_cost,
+                quantity=1,
+                usage_hours=730,
+                monthly_cost=monthly_cost,
+                details={
+                    "region": resource.region,
+                    "monthly_rate": monthly_cost,
+                },
+            )
+
+        elif resource.service == "cloudwatch":
+            # Basic CloudWatch monitoring cost
+            monthly_cost = 0.30  # $0.30 per metric per month
+            return PricingResult(
+                resource_type="CloudWatch Monitoring",
+                unit_price=monthly_cost,
+                quantity=1,
+                usage_hours=730,
+                monthly_cost=monthly_cost,
+                details={
+                    "region": resource.region,
+                    "monthly_rate": monthly_cost,
+                },
+            )
+
+        elif resource.service == "waf":
+            # WAF cost per month
+            monthly_cost = 5.00  # $5 per Web ACL per month
+            return PricingResult(
+                resource_type="WAF",
+                unit_price=monthly_cost,
+                quantity=1,
+                usage_hours=730,
+                monthly_cost=monthly_cost,
+                details={
+                    "region": resource.region,
+                    "monthly_rate": monthly_cost,
+                },
+            )
+
         else:
             raise ValueError(f"Unsupported service: {resource.service}")
 

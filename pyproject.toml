@@ -12,9 +12,13 @@ dependencies = [
     "python-docx>=0.8.11",
     "pyyaml>=6.0",
     "jinja2>=3.1.2",
-    "boto3>=1.26.0",
+    "boto3>=1.28.0",
     "diagrams>=0.23.3",
     "graphviz>=0.20.1",
+    "pyppeteer>=1.0.2",
+    "selenium>=4.15.0",
+    "webdriver-manager>=4.0.0",
+    "pillow>=10.0.0",
 ]
 requires-python = ">=3.8"
 readme = "README.md"

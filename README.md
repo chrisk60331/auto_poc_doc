@@ -6,7 +6,9 @@ A comprehensive tool for creating Statement of Work (SOW), AWS Architecture Diag
 
 - **Statement of Work Generation**: Create professional SOW documents from customizable templates
 - **AWS Architecture Diagrams**: Generate clear and professional architecture diagrams
-- **AWS Price Estimation**: Calculate cost estimates for AWS resources
+- **AWS Price Estimation**: Calculate cost estimates for AWS resources with two approaches:
+  - Local calculation for quick estimates
+  - Browser-based calculator for accurate, shareable AWS pricing
 - **AI-Powered Configuration Generation**: Use Amazon Bedrock to generate AWS configurations from meeting notes or transcripts
 - **End-to-End Workflow**: Go from meeting notes to complete deliverables in a single command
 - Dual interface:
@@ -20,21 +22,21 @@ A comprehensive tool for creating Statement of Work (SOW), AWS Architecture Diag
 ```
 .
 ├── pyproject.toml           # Project configuration and dependencies
-├── README.md               # This file
+├── README.md                # This file
 ├── src/
-│   ├── cli/               # Click-based CLI implementation
-│   ├── api/               # FastAPI implementation
-│   ├── core/              # Core business logic
-│   │   ├── sow/          # SOW generation logic
-│   │   ├── diagrams/     # AWS architecture diagram generation
-│   │   └── pricing/      # AWS pricing calculation
-│   └── utils/            # Shared utilities
-├── tests/                 # Test suite
-│   ├── unit/             # Unit tests
-│   ├── integration/      # Integration tests
-│   └── fixtures/         # Test fixtures
-├── docs/                 # Documentation
-└── examples/            # Example configurations and outputs
+│   ├── cli/                # Click-based CLI implementation
+│   ├── api/                # FastAPI implementation
+│   ├── core/               # Core business logic
+│   │   ├── sow/           # SOW generation logic
+│   │   ├── diagrams/      # AWS architecture diagram generation
+│   │   └── pricing/       # AWS pricing calculation
+│   └── utils/             # Shared utilities
+├── tests/                  # Test suite
+│   ├── unit/              # Unit tests
+│   ├── integration/       # Integration tests
+│   └── fixtures/          # Test fixtures
+├── docs/                  # Documentation
+└── examples/             # Example configurations and outputs
 ```
 
 ## Requirements
@@ -42,11 +44,33 @@ A comprehensive tool for creating Statement of Work (SOW), AWS Architecture Diag
 - Python 3.10+
 - uv (for dependency management)
 - AWS Account (for pricing calculations)
+- Graphviz (for diagram generation)
+- Chrome/Chromium (for browser-based pricing with pyppeteer)
 
 ## Installation
 
+### Setting up with uv (Recommended)
+
 ```bash
-pip install aws-project-planning
+# Install uv if not already installed
+pip install uv
+
+# Create and activate a new virtual environment
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install the package in development mode
+uv pip install -e .
+
+# Install with development dependencies
+uv pip install -e ".[dev]"
+```
+
+### Alternative Installation
+
+```bash
+# Install the package using uv
+uv pip install aws-project-planning
 ```
 
 or install from source:
@@ -54,13 +78,16 @@ or install from source:
 ```bash
 git clone https://github.com/yourusername/aws-project-planning.git
 cd aws-project-planning
-pip install -e .
+
+# Create and activate a virtual environment
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install from source
+uv pip install -e .
 ```
 
-## Dependencies
-
-- Python 3.8+
-- Graphviz (required for diagram generation)
+### Dependencies
 
 To install Graphviz:
 - macOS: `brew install graphviz`
@@ -105,8 +132,8 @@ aws-planner generate diagram --notes meeting_notes.txt --diagram-output diagram_
 # Generate SOW configuration
 aws-planner generate sow --notes meeting_notes.txt --sow-output sow_config.yaml
 
-# Generate both configurations at once
-aws-planner generate all --notes meeting_notes.txt --resources-output resources_config.yaml --diagram-output diagram_config.yaml
+# Generate all configurations at once
+aws-planner generate all --notes meeting_notes.txt --resources-output resources_config.yaml --diagram-output diagram_config.yaml --sow-output sow_config.yaml
 ```
 
 #### Generate SOW Document
@@ -128,10 +155,6 @@ When using Word document templates:
 - The effective date is automatically set to two weeks from the prepared date
 - Placeholders in the document are replaced with values from your configuration
 
-Available templates:
-- `standard` - Basic text-based template
-- `NMD` - Formatted Word document template with professional layout
-
 To list available templates:
 ```bash
 aws-planner sow list-templates
@@ -149,9 +172,48 @@ aws-planner diagram from-resources --resources resources_config.yaml --output ar
 
 #### Generate AWS Price Estimate
 
+The pricing module offers two methods for calculating AWS costs:
+
+##### URL-Based Price Estimates
+
 ```bash
+# Basic price estimate
 aws-planner pricing estimate --resources resources_config.yaml --region us-east-1 --output estimate.txt
+
+# Generate only the AWS Calculator URL
+aws-planner pricing estimate --resources resources_config.yaml --url-only
+
+# Generate price estimate with AWS Calculator URL
+aws-planner pricing estimate --resources resources_config.yaml --include-url
+
+# Generate just the AWS Calculator URL
+aws-planner pricing calculator-url --resources resources_config.yaml
 ```
+
+##### Browser-Based Price Estimates (New!)
+
+For more accurate pricing directly from the AWS Calculator:
+
+```bash
+# Generate price estimate using headless browser automation
+aws-planner pricing browser-estimate --resources resources_config.yaml --output-dir price_results
+
+# Use a visible browser window for debugging
+aws-planner pricing browser-estimate --resources resources_config.yaml --output-dir price_results --no-headless
+```
+
+The browser-based calculator:
+- Uses pyppeteer to automate Chrome/Chromium
+- Loads your resources into the official AWS Pricing Calculator
+- Captures screenshots of the pricing page
+- Extracts detailed pricing information
+- Saves results and the calculator URL for sharing
+
+This approach provides several benefits:
+1. **Official AWS Pricing**: Uses the live AWS Calculator for up-to-date pricing
+2. **Visual Verification**: Captures screenshots of the pricing estimate
+3. **Accurate Breakdowns**: Gets detailed price data for each service
+4. **Shareability**: Creates URLs that can be shared with clients or team members
 
 ### API Server
 
@@ -287,19 +349,49 @@ resources:
 
 ## Development
 
-1. Install development dependencies:
 ```bash
+# Setup development environment with uv
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 uv pip install -e ".[dev]"
-```
 
-2. Run tests:
-```bash
+# Run tests
 pytest
+
+# Run linting
+ruff check .
 ```
 
-3. Run linting:
+## Demo Scripts
+
+The repository includes demonstration scripts to help you get started:
+
 ```bash
-ruff check .
+# Test the browser-based pricing calculator
+python demo_browser_calculator.py grid_visibility/configs/grid_visibility_resources.yaml
+
+# Run with visible browser for debugging
+python demo_browser_calculator.py grid_visibility/configs/grid_visibility_resources.yaml --no-headless
+```
+
+## AWS Bedrock Integration
+
+This tool integrates with Amazon Bedrock to provide AI-powered generation of AWS configurations from natural language descriptions, meeting notes, or project transcripts. The LLM can:
+
+1. Parse project requirements from unstructured text
+2. Determine appropriate AWS services and instance types
+3. Generate structured YAML configurations for resources, architecture diagrams, and SOW documents
+
+To use the Bedrock integration:
+
+1. Ensure your AWS credentials are configured with Bedrock access
+2. Create a text file with project requirements or meeting notes
+3. Use the `generate` commands to create configurations
+
+The default model is `anthropic.claude-v2`, but you can specify other Bedrock models:
+
+```bash
+aws-planner generate resources --notes meeting_notes.txt --model amazon.titan-text-express-v1
 ```
 
 ## Contributing
@@ -319,44 +411,4 @@ MIT
 - [Diagrams](https://diagrams.mingrammer.com/) for the architecture diagram generation
 - [FastAPI](https://fastapi.tiangolo.com/) for the API framework
 - [Click](https://click.palletsprojects.com/) for the CLI framework
-
-## AWS Bedrock Integration
-
-This tool integrates with Amazon Bedrock to provide AI-powered generation of AWS configurations from natural language descriptions, meeting notes, or project transcripts. The LLM can:
-
-1. Parse project requirements from unstructured text
-2. Determine appropriate AWS services and instance types
-3. Generate structured YAML configurations for both resources and architecture diagrams
-
-To use the Bedrock integration:
-
-1. Ensure your AWS credentials are configured with Bedrock access
-2. Create a text file with project requirements or meeting notes
-3. Use the `generate` commands to create configurations
-
-Example usage:
-
-```bash
-# Generate both resources and diagram configs
-aws-planner generate all --notes examples/meeting_notes.txt --resources-output generated_resources.yaml --diagram-output generated_diagram.yaml
-
-# Generate SOW configuration and document
-aws-planner generate sow --notes examples/meeting_notes.txt --sow-output generated_sow.yaml
-aws-planner sow create --config generated_sow.yaml --output project_sow.docx --template NMD
-
-# Create diagram from the generated config
-aws-planner diagram create --config generated_diagram.yaml --output architecture.png
-
-# Calculate cost estimate from the generated resources
-aws-planner pricing estimate --resources generated_resources.yaml --output estimate.txt
-```
-
-### Supported Bedrock Models
-
-The default model is `anthropic.claude-v2`, but you can specify other Bedrock models:
-
-```bash
-aws-planner generate resources --notes meeting_notes.txt --model amazon.titan-text-express-v1
-```
-
-The API endpoints also accept a `model_id` parameter for specifying the Bedrock model to use. 
+- [pyppeteer](https://github.com/pyppeteer/pyppeteer) for headless browser automation 

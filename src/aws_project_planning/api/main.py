@@ -88,11 +88,14 @@ class ResourceCostDetails(BaseModel):
 
 
 class PricingResponse(BaseModel):
-    """Response model for pricing estimation."""
-
-    total_monthly_cost: float
-    resources: List[ResourceCostDetails]
-    formatted_report: str
+    """Response model for pricing estimates."""
+    
+    status: str = "success"
+    message: str = "AWS price estimate"
+    total_cost: float
+    resources: List[Dict[str, Any]]
+    report: str
+    calculator_url: Optional[str] = None
 
 
 class NodeConfig(BaseModel):
@@ -276,35 +279,55 @@ async def create_sow(request: SOWRequest):
 
 
 @app.post("/pricing/estimate")
-async def estimate_pricing(request: PricingRequest) -> PricingResponse:
-    """Generate AWS price estimate."""
+async def estimate_pricing(
+    resources: List[ResourceConfig],
+    region: str = "us-east-1",
+    include_calculator_url: bool = True,
+) -> PricingResponse:
+    """Calculate AWS pricing estimate for resources."""
     try:
-        service = PricingService(default_region=request.default_region)
+        # Initialize service
+        service = PricingService(default_region=region)
         
-        # Convert Pydantic models to ResourceConfig objects
-        resources = [
-            ResourceConfig(
-                service=r.service,
-                resource_type=r.type,
-                specs=r.specs.dict(exclude_none=True),
-                region=r.region,
-                quantity=r.quantity,
-                usage_hours=r.usage_hours,
-            )
-            for r in request.resources
-        ]
+        # Generate cost report with calculator URL if requested
+        result = service.generate_cost_report(resources, include_url=include_calculator_url)
         
-        # Calculate costs
-        costs = service.calculate_costs(resources)
-        
-        # Generate formatted report
-        formatted_report = service.format_cost_report(costs)
-        
-        return PricingResponse(
-            total_monthly_cost=costs["total_monthly_cost"],
-            resources=[ResourceCostDetails(**r) for r in costs["resources"]],
-            formatted_report=formatted_report,
+        # Prepare response
+        response = PricingResponse(
+            status="success",
+            message="AWS pricing estimate generated successfully",
+            total_cost=result["costs"]["total_monthly_cost"],
+            resources=result["costs"]["resources"],
+            report=result["report"],
         )
+        
+        # Add calculator URL if it was included in the result
+        if "calculator_url" in result:
+            response.calculator_url = result["calculator_url"]
+        
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/pricing/calculator-url")
+async def get_calculator_url(
+    resources: List[ResourceConfig],
+    region: str = "us-east-1",
+) -> Dict[str, str]:
+    """Generate AWS Calculator URL for resources."""
+    try:
+        # Initialize service
+        service = PricingService(default_region=region)
+        
+        # Generate calculator URL
+        calculator_url = service.generate_calculator_url(resources)
+        
+        return {
+            "status": "success",
+            "message": "AWS Calculator URL generated successfully",
+            "calculator_url": calculator_url,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

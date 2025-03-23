@@ -4,6 +4,8 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
+import traceback
 
 import click
 import yaml
@@ -292,34 +294,202 @@ def from_resources(resources: str, output: str, region: str):
 
 @pricing.command()
 @click.option("--resources", type=click.Path(exists=True), required=True, help="Resources configuration file")
-@click.option("--region", type=str, default="us-east-1", help="Default AWS region")
-@click.option("--output", type=click.Path(), help="Output file for the cost report")
-def estimate(resources: str, region: str, output: str):
-    """Generate AWS price estimate."""
+@click.option("--output-dir", type=click.Path(), required=True, help="Output directory for price estimate and screenshot")
+@click.option("--region", type=str, default="us-east-1", help="AWS region for pricing")
+@click.option("--headless/--no-headless", default=True, help="Run browser in headless mode")
+@click.option("--timeout", type=int, default=60, help="Timeout in seconds for browser operations")
+@click.option("--debug/--no-debug", default=False, help="Enable debugging mode with detailed page analysis")
+@click.option("--selenium-script", type=click.Path(exists=False), help="Optional Selenium IDE script (.side file) to use for automation")
+def browser_estimate(resources: str, output_dir: str, region: str, headless: bool, timeout: int, debug: bool, selenium_script: str):
+    """
+    Calculate AWS price estimate using browser automation for improved accuracy.
+    
+    This command launches a browser to interact with the AWS Calculator directly,
+    providing more accurate pricing and a screenshot of the estimate.
+    
+    The command can use either:
+    - A Selenium-based approach (default and recommended)
+    - A Selenium IDE script if provided with --selenium-script
+    
+    To enable detailed debugging, use --debug flag, which will:
+    - Save page HTML, screenshots and structure to the output directory
+    - Extract information about UI elements to help identify correct selectors
+    - Run with visible browser if --no-headless is also specified
+    
+    If the automation fails, try:
+    - Using visible browser mode: --no-headless
+    - Increasing timeout: --timeout 120
+    - Enabling debugging: --debug
+    """
+    try:
+        # Check for selenium dependencies
+        try:
+            import selenium
+            from selenium import webdriver
+            from webdriver_manager.chrome import ChromeDriverManager
+        except ImportError:
+            click.echo("\n❌ Required dependencies are not installed.")
+            click.echo("This feature requires selenium and webdriver-manager to automate browser interaction.")
+            click.echo("\nTo install the required dependencies, run:")
+            click.echo("   uv pip install selenium webdriver-manager")
+            return
+            
+        # Initialize service and load resources
+        service = PricingService(default_region=region)
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Load resources
+        click.echo(f"Loading resources from {resources}...")
+        resources_list = service.load_resources_from_config(resources)
+        
+        if selenium_script:
+            click.echo(f"Using Selenium IDE script: {selenium_script}")
+            # Import the selenium script loading function
+            from aws_project_planning.core.pricing.selenium_calculator import load_selenium_script
+            script_data = load_selenium_script(selenium_script)
+            click.echo(f"Loaded script: {script_data['name']} with {len(script_data['commands'])} commands")
+        
+        # Import and use the Selenium calculator
+        click.echo(f"Launching {'headless ' if headless else 'visible '}browser to calculate AWS prices...")
+        from aws_project_planning.core.pricing.selenium_calculator import AWSSeleniumCalculator
+        
+        # Initialize the calculator
+        calculator = AWSSeleniumCalculator(headless=headless, timeout=timeout, debug=debug)
+        
+        # Run the browser calculator
+        result = calculator.save_price_estimate(resources_list, output_dir, debug=debug)
+        
+        if result['status'] == 'success':
+            click.echo(f"✅ Successfully created browser-based price estimate")
+            click.echo(f"  📊 Total monthly cost: ${result['total_monthly_cost']:,.2f}")
+            
+            if result.get('services'):
+                click.echo(f"\n  Service breakdown:")
+                for service_info in result['services']:
+                    price = service_info.get('price', 0)
+                    name = service_info.get('name', 'Unknown service')
+                    raw_price = service_info.get('raw_price', '')
+                    click.echo(f"    - {name}: ${price:,.2f}  {raw_price}")
+            
+            # Safely handle potentially missing paths
+            screenshot_path = result.get('screenshot_path')
+            if screenshot_path and os.path.exists(screenshot_path):
+                click.echo(f"\n  🖼️ Screenshot saved to: {screenshot_path}")
+                
+            price_data_path = result.get('price_data_path')
+            if price_data_path and os.path.exists(price_data_path):
+                click.echo(f"  📄 Price data saved to: {price_data_path}")
+                
+            url_path = result.get('url_path')
+            if url_path and os.path.exists(url_path):
+                click.echo(f"  🔗 Calculator URL saved to: {url_path}")
+            
+            if result.get('debug_dir'):
+                click.echo(f"  🔍 Debug information saved to: {result['debug_dir']}")
+                
+            if result.get('calculator_url'):
+                click.echo(f"\n  To view the price estimate in your browser, open: {result['calculator_url']}")
+        else:
+            click.echo(f"❌ Error: {result.get('message', 'Unknown error')}")
+            
+            # Check for error screenshot
+            error_screenshot_path = result.get('error_screenshot_path')
+            if error_screenshot_path and os.path.exists(error_screenshot_path):
+                click.echo(f"  Error screenshot saved to: {error_screenshot_path}")
+                
+            # Regular screenshot might also exist
+            screenshot_path = result.get('screenshot_path')
+            if screenshot_path and os.path.exists(screenshot_path):
+                click.echo(f"  Screenshot saved to: {screenshot_path}")
+            
+            url_path = result.get('url_path')
+            if url_path and os.path.exists(url_path):
+                click.echo(f"  Calculator URL saved to: {url_path}")
+                
+            if result.get('calculator_url'):
+                click.echo(f"  You can manually open this URL in your browser: {result['calculator_url']}")
+            
+            # Show debug info if available
+            if result.get('debug_dir'):
+                click.echo(f"  Debug information saved to: {result['debug_dir']}")
+                click.echo(f"  Review the HTML and JSON files to identify page structure issues")
+            
+            # Suggest remediation
+            click.echo("\nTroubleshooting suggestions:")
+            click.echo("  1. Try with visible browser: --no-headless")
+            click.echo("  2. Increase timeout: --timeout 120") 
+            click.echo("  3. Enable debugging: --debug")
+            click.echo("  4. Check the error screenshot for more details")
+            click.echo("  5. Record a custom Selenium script and use with --selenium-script")
+            
+    except Exception as e:
+        traceback.print_exc()
+        click.echo(f"Error calculating prices: {str(e)}", err=True)
+        raise click.Abort()
+
+
+@pricing.command()
+@click.option("--resources", type=click.Path(exists=True), required=True, help="Resources configuration file")
+@click.option("--region", type=str, default="us-east-1", help="AWS region for pricing")
+@click.option("--output", type=click.Path(), help="Output file for price estimate (optional)")
+@click.option("--include-url", is_flag=True, default=True, help="Include AWS Calculator URL in the output")
+@click.option("--url-only", is_flag=True, default=False, help="Only output the AWS Calculator URL")
+def estimate(resources: str, region: str, output: Optional[str], include_url: bool, url_only: bool):
+    """Calculate AWS price estimate for resources."""
     try:
         # Initialize service
         service = PricingService(default_region=region)
 
-        # Calculate costs
-        costs = service.estimate_from_config(resources)
-
-        # Format report
-        report = service.format_cost_report(costs)
-
-        # Output results
-        click.echo("\n" + report)
-
-        # Save to file if specified
-        if output:
-            with open(output, "w") as f:
-                if output.endswith(".json"):
-                    json.dump(costs, f, indent=2)
-                else:
+        if url_only:
+            # Just generate the AWS Calculator URL
+            calculator_url = service.generate_calculator_url_from_config(resources)
+            click.echo(f"AWS Calculator URL:\n{calculator_url}")
+        else:
+            # Generate comprehensive cost report
+            result = service.generate_cost_report_from_config(resources, include_url=include_url)
+            
+            # Get the formatted report
+            report = result["report"]
+            
+            # Add URL to report if it was generated
+            if include_url and "calculator_url" in result:
+                report += f"\n\nView in AWS Pricing Calculator:\n{result['calculator_url']}"
+            
+            # Output to file or console
+            if output:
+                with open(output, "w") as f:
                     f.write(report)
-            click.echo(f"\nReport saved to: {output}")
-
+                click.echo(f"Successfully created cost estimate at: {output}")
+            else:
+                click.echo(report)
+                
+        # Return a successful result
+        return True
     except Exception as e:
         click.echo(f"Error calculating prices: {str(e)}", err=True)
+        traceback.print_exc()
+        raise click.Abort()
+
+
+@pricing.command()
+@click.option("--resources", type=click.Path(exists=True), required=True, help="Resources configuration file")
+@click.option("--region", type=str, default="us-east-1", help="AWS region for pricing")
+def calculator_url(resources: str, region: str):
+    """Generate a shareable AWS Calculator URL for resources."""
+    try:
+        # Initialize service
+        service = PricingService(default_region=region)
+        
+        # Generate the AWS Calculator URL
+        calculator_url = service.generate_calculator_url_from_config(resources)
+        
+        # Output the URL
+        click.echo(f"AWS Calculator URL for {resources}:")
+        click.echo(calculator_url)
+    except Exception as e:
+        click.echo(f"Error generating AWS Calculator URL: {str(e)}", err=True)
         raise click.Abort()
 
 

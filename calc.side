@@ -1,0 +1,85 @@
+{
+  "id": "a9a342ec-0fee-4f30-915b-8d23679ad1c6",
+  "version": "2.0",
+  "name": "sdfasdasd",
+  "url": "https://calculator.aws",
+  "tests": [{
+    "id": "d5917f7c-749c-4527-af09-af20ac174c4a",
+    "name": "Untitled",
+    "commands": [{
+      "id": "581facfe-87f6-41c9-a278-26130c156b63",
+      "comment": "",
+      "command": "open",
+      "target": "/",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "04a49ab3-6973-47bd-b73b-ca190488410c",
+      "comment": "",
+      "command": "setWindowSize",
+      "target": "1243x799",
+      "targets": [],
+      "value": ""
+    }, {
+      "id": "0ebdcf79-ead2-4b5a-917b-76f40ab9266c",
+      "comment": "",
+      "command": "click",
+      "target": "css=.awsui_root_18wu0_1yxfb_920 .awsui_content_vjswe_lssc8_153",
+      "targets": [
+        ["css=.awsui_root_18wu0_1yxfb_920 .awsui_content_vjswe_lssc8_153", "css:finder"],
+        ["xpath=//div[@id='69-1742393306029-1402']/div/div/div/button/span", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/div/div/div/div/button/span", "xpath:position"],
+        ["xpath=//span[contains(.,'Create estimate')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "5c728016-958b-4522-a9ad-838a59278d3a",
+      "comment": "",
+      "command": "mouseOver",
+      "target": "css=.awsui_root_18wu0_1yxfb_920 .awsui_content_vjswe_lssc8_153",
+      "targets": [
+        ["css=.awsui_root_18wu0_1yxfb_920 .awsui_content_vjswe_lssc8_153", "css:finder"],
+        ["xpath=//div[@id='69-1742393306029-1402']/div/div/div/button/span", "xpath:idRelative"],
+        ["xpath=//div[2]/div/div/div/div/div/div/div/button/span", "xpath:position"],
+        ["xpath=//span[contains(.,'Create estimate')]", "xpath:innerText"]
+      ],
+      "value": ""
+    }, {
+      "id": "09912dee-5e6c-46f4-b4e5-de49a314a9e1",
+      "comment": "",
+      "command": "click",
+      "target": "id=138-1742393308105-1772-label",
+      "targets": [
+        ["id=138-1742393308105-1772-label", "id"],
+        ["css=#\\31 38-1742393308105-1772-label", "css:finder"],
+        ["xpath=//span[@id='138-1742393308105-1772-label']", "xpath:attributes"],
+        ["xpath=//div[@id='131-1742393308104-6343']/div/div/div[2]/div/div/div/div[2]/div/span/span/span[2]/span", "xpath:idRelative"],
+        ["xpath=//div[2]/div/span/span/span[2]/span", "xpath:position"]
+      ],
+      "value": ""
+    }, {
+      "id": "ed0c5d69-962e-46d5-9772-1216da410a72",
+      "comment": "",
+      "command": "click",
+      "target": "id=formField1094-1742393309755-2435",
+      "targets": [
+        ["id=formField1094-1742393309755-2435", "id"],
+        ["css=#formField1094-1742393309755-2435", "css:finder"],
+        ["xpath=//input[@id='formField1094-1742393309755-2435']", "xpath:attributes"],
+        ["xpath=//div[@id='131-1742393308104-6343']/div/div/div[2]/div/div[2]/div[2]/div/div/div/div/div/input", "xpath:idRelative"],
+        ["xpath=//div/input", "xpath:position"]
+      ],
+      "value": ""
+    }]
+  }],
+  "suites": [{
+    "id": "17fc6275-8c69-4ef7-a72c-f9e77af42509",
+    "name": "Default Suite",
+    "persistSession": false,
+    "parallel": false,
+    "timeout": 300,
+    "tests": ["d5917f7c-749c-4527-af09-af20ac174c4a"]
+  }],
+  "urls": ["https://calculator.aws/"],
+  "plugins": []
+}

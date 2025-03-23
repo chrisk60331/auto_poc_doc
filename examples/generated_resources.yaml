@@ -31,12 +31,17 @@ resources:
 - region: us-east-1
   service: s3
   type: storage
+  specs: 
+    storage_class: Standard
 - region: us-east-1
+  specs: None
   service: sqs
   type: messaging
 - region: us-east-1
   service: cloudwatch
+  specs: None
   type: monitoring
 - region: us-east-1
   service: waf
   type: security
+  specs: None
